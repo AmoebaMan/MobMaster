@@ -1,0 +1,3 @@
+==MobMaster==
+
+CraftBukkit plugin - provides enhanced and simplified utilities and capabilities for spawning mobs
