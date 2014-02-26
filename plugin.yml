@@ -1,0 +1,25 @@
+main: net.amoebaman.mobmaster.MobMaster
+
+name: MobMaster
+version: 1.0
+author: AmoebaMan
+website: http://www.amoebaman.net
+description: Monster spawning...rewritten for even more evil
+
+commands:
+
+    mobspawn:
+        aliases:
+        - mobs
+        - ms
+        usage: /mobspawn <type>[:tag] [amount] [flags...]
+        description: Spawns modified mobs on command
+        permission: mobmaster.mobspawn
+        
+    mobkill:
+        aliases:
+        - mobk
+        - mk
+        usage: /mobkill [options] [flags...]
+        description: Brutally murders mobs on command
+        permission: mobmaster.mobspawn
