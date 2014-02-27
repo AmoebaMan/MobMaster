@@ -40,3 +40,4 @@ target
 .classpath
 .options
 .project
+/bin
