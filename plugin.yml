@@ -14,7 +14,7 @@ commands:
         - ms
         usage: /mobspawn <type>[:tag] [amount] [flags...]
         description: Spawns modified mobs on command
-        permission: mobmaster.mobspawn
+        permission: mobmaster.use
         
     mobkill:
         aliases:
@@ -22,4 +22,10 @@ commands:
         - mk
         usage: /mobkill [options] [flags...]
         description: Brutally murders mobs on command
-        permission: mobmaster.mobspawn
+        permission: mobmaster.use
+        
+permissions:
+
+    mobmaster.use:
+        description: Allows the player to use MobMaster
+        default: op
