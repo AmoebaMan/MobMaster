@@ -141,11 +141,13 @@ public class MobMaster extends JavaPlugin implements Listener {
 					else {
 						String[] split = value.split(",");
 						try {
-							loc.setX(Integer.parseInt(split[0]) + 0.5);
-							loc.setY(Integer.parseInt(split[1]) + 0.5);
-							loc.setZ(Integer.parseInt(split[2]) + 0.5);
-							if(split.length > 3)
-								loc.setWorld(Bukkit.getWorld(split[3]));
+							if(loc == null)
+								loc = new Location(Bukkit.getWorld(split[0]), Integer.parseInt(split[1]) + 0.5, Integer.parseInt(split[2]) + 0.5, Integer.parseInt(split[3]) + 0.5);
+							else{
+								loc.setX(Integer.parseInt(split[0]) + 0.5);
+								loc.setY(Integer.parseInt(split[1]) + 0.5);
+								loc.setZ(Integer.parseInt(split[2]) + 0.5);
+							}
 						}
 						catch (Exception e) {}
 					}
@@ -235,11 +237,13 @@ public class MobMaster extends JavaPlugin implements Listener {
 					else {
 						String[] split = value.split(",");
 						try {
-							loc.setX(Integer.parseInt(split[0]) + 0.5);
-							loc.setY(Integer.parseInt(split[1]) + 0.5);
-							loc.setZ(Integer.parseInt(split[2]) + 0.5);
-							if(split.length > 3)
-								loc.setWorld(Bukkit.getWorld(split[3]));
+							if(loc == null)
+								loc = new Location(Bukkit.getWorld(split[0]), Integer.parseInt(split[1]) + 0.5, Integer.parseInt(split[2]) + 0.5, Integer.parseInt(split[3]) + 0.5);
+							else{
+								loc.setX(Integer.parseInt(split[0]) + 0.5);
+								loc.setY(Integer.parseInt(split[1]) + 0.5);
+								loc.setZ(Integer.parseInt(split[2]) + 0.5);
+							}
 						}
 						catch (Exception e) {}
 					}
@@ -371,8 +375,8 @@ public class MobMaster extends JavaPlugin implements Listener {
 	public void applyDamageModifier(EntityDamageEvent event) {
 		if (event instanceof EntityDamageByEntityEvent) {
 			Entity e = ((EntityDamageByEntityEvent) event).getDamager();
-			if (e instanceof Projectile)
-				e = ((Projectile) e).getShooter();
+			if (e instanceof Projectile && ((Projectile) e).getShooter() instanceof Entity)
+				e = (Entity) ((Projectile) e).getShooter();
 			if (e instanceof LivingEntity && Utils.isMasterMob(e))
 				event.setDamage(event.getDamage() * ((MobFlags) e.getMetadata("mob-flags").get(0).value()).damage);
 		}
