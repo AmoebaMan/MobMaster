@@ -71,7 +71,7 @@ public class Utils {
 		if(name.contains("invis")) return PotionEffectType.INVISIBILITY;
 		if(name.contains("night")) return PotionEffectType.NIGHT_VISION;
 		if(name.contains("wither")) return PotionEffectType.WITHER;
-		return null;
+		return PotionEffectType.getByName(name.toUpperCase().replace(' ', '_'));
 	}
 	
 	static List<String> getRandomNames() {
