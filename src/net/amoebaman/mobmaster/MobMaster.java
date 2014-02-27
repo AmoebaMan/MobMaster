@@ -15,6 +15,7 @@ import net.minecraft.util.com.google.common.collect.Lists;
 
 import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
+import org.bukkit.DyeColor;
 import org.bukkit.Location;
 import org.bukkit.command.BlockCommandSender;
 import org.bukkit.command.CommandSender;
@@ -143,6 +144,8 @@ public class MobMaster extends JavaPlugin implements Listener {
 							loc.setX(Integer.parseInt(split[0]) + 0.5);
 							loc.setY(Integer.parseInt(split[1]) + 0.5);
 							loc.setZ(Integer.parseInt(split[2]) + 0.5);
+							if(split.length > 3)
+								loc.setWorld(Bukkit.getWorld(split[3]));
 						}
 						catch (Exception e) {}
 					}
@@ -153,7 +156,7 @@ public class MobMaster extends JavaPlugin implements Listener {
 						value = value.replace("f", "");
 					}
 					try {
-						flags.explosion = Integer.parseInt(value);
+						flags.explosion = Float.parseFloat(value);
 					}
 					catch (Exception e) {}
 				}
@@ -235,6 +238,8 @@ public class MobMaster extends JavaPlugin implements Listener {
 							loc.setX(Integer.parseInt(split[0]) + 0.5);
 							loc.setY(Integer.parseInt(split[1]) + 0.5);
 							loc.setZ(Integer.parseInt(split[2]) + 0.5);
+							if(split.length > 3)
+								loc.setWorld(Bukkit.getWorld(split[3]));
 						}
 						catch (Exception e) {}
 					}
@@ -323,17 +328,25 @@ public class MobMaster extends JavaPlugin implements Listener {
 			((Pig) e).setSaddle(true);
 		if (e instanceof PigZombie && flags.tag.contains("angry"))
 			((PigZombie) e).setAngry(true);
-		if (e instanceof Sheep && flags.tag.contains("sheared"))
-			((Sheep) e).setSheared(true);
+		if (e instanceof Sheep){
+			if(flags.tag.contains("shear"))
+				((Sheep) e).setSheared(true);
+			if(flags.tag.contains("rand"))
+				((Sheep) e).setColor(DyeColor.values()[new Random().nextInt(DyeColor.values().length)]);
+			else
+				for(DyeColor color : DyeColor.values())
+					if(flags.tag.contains(color.name().toLowerCase()))
+						((Sheep) e).setColor(color);
+		}
 		if (e instanceof Skeleton && flags.tag.contains("wither"))
 			((Skeleton) e).setSkeletonType(SkeletonType.WITHER);
-		if (e instanceof Slime && flags.tag != null) {
+		if (e instanceof Slime) {
 			try {
 				((Slime) e).setSize(Integer.parseInt(flags.tag));
 			}
 			catch (Exception ex) {}
 		}
-		if (e instanceof Villager && flags.tag != null) {
+		if (e instanceof Villager) {
 			if (flags.tag.contains("rand"))
 				((Villager) e).setProfession(Profession.values()[new Random().nextInt(Profession.values().length)]);
 			else {
