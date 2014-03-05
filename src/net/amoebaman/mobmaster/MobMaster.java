@@ -8,9 +8,9 @@ import java.util.Random;
 
 import net.amoebaman.utils.CommandController;
 import net.amoebaman.utils.CommandController.CommandHandler;
-import net.amoebaman.utils.MetricsLite;
-import net.amoebaman.utils.Updater;
-import net.amoebaman.utils.Updater.UpdateType;
+import net.amoebaman.utils.plugin.MetricsLite;
+import net.amoebaman.utils.plugin.Updater;
+import net.amoebaman.utils.plugin.Updater.UpdateType;
 import net.minecraft.util.com.google.common.collect.Lists;
 
 import org.bukkit.Bukkit;
