@@ -310,7 +310,7 @@ public class MobMaster extends JavaPlugin implements Listener {
 		if (!flags.name.isEmpty()) {
 			e.setCustomName(flags.name.get(new Random().nextInt(flags.name.size())));
 			if (e.getCustomName().contains("rand")) {
-				List<String> rand = Utils.getRandomNames();
+				List<String> rand = Utils.getRandomNames(e.getCustomName().contains("b") ? "b" : e.getCustomName().contains("g") ? "g" : "bg");
 				e.setCustomName(rand.get(new Random().nextInt(rand.size())));
 			}
 			e.setCustomNameVisible(true);
