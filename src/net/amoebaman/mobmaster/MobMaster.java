@@ -12,10 +12,12 @@ import org.bukkit.entity.Villager.Profession;
 import org.bukkit.entity.minecart.CommandMinecart;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
+import org.bukkit.event.block.Action;
 import org.bukkit.event.entity.EntityDamageByEntityEvent;
 import org.bukkit.event.entity.EntityDamageEvent;
 import org.bukkit.event.entity.EntityDeathEvent;
 import org.bukkit.event.player.PlayerInteractEntityEvent;
+import org.bukkit.event.player.PlayerInteractEvent;
 import org.bukkit.inventory.EntityEquipment;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.metadata.FixedMetadataValue;
@@ -24,18 +26,20 @@ import org.bukkit.potion.PotionEffect;
 import org.bukkit.potion.PotionEffectType;
 import org.bukkit.util.Vector;
 
+import com.google.common.collect.Lists;
+
 import net.amoebaman.mobmaster.MobFlags.ArmorType;
 import net.amoebaman.utils.CommandController;
 import net.amoebaman.utils.CommandController.CommandHandler;
+import net.amoebaman.utils.maps.PlayerMap;
 import net.amoebaman.utils.plugin.MetricsLite;
 import net.amoebaman.utils.plugin.Updater;
 import net.amoebaman.utils.plugin.Updater.UpdateType;
 
-import net.minecraft.util.com.google.common.collect.Lists;
-
 public class MobMaster extends JavaPlugin implements Listener {
 	
 	private List<String> boyNames = new ArrayList<String>(), girlNames = new ArrayList<String>();
+	private PlayerMap<Map<ItemStack, String>> binds = new PlayerMap<Map<ItemStack, String>>();
 	
 	public void onEnable() {
 		
@@ -167,6 +171,17 @@ public class MobMaster extends JavaPlugin implements Listener {
 				}
 				if(flag.startsWith("c"))
 					try{ flags.counter = Float.parseFloat(value); } catch(Exception e){}
+				if(flag.equals("bind") && sender instanceof Player && ((Player) sender).getItemInHand() != null){
+					Player player = (Player) sender;
+					
+					String fullCmd = "mobspawn " + type.name() + (flags.tag.isEmpty() ? "" : ":" + flags.tag) + " " + amount;
+					for(String arg : args)
+						fullCmd += " " + arg;
+					if(!binds.containsKey(player))
+						binds.put(player, new HashMap<ItemStack, String>());
+					
+					binds.get(player).put(player.getItemInHand(), fullCmd);
+				}
 			}
 		
 		if (loc == null) {
@@ -308,12 +323,10 @@ public class MobMaster extends JavaPlugin implements Listener {
 	public void spawnMob(Location loc, Vector vel, EntityType type, MobFlags flags) {
 		if (!(type.isSpawnable() && type.isAlive()))
 			return;
-		LivingEntity e = (LivingEntity) loc.getWorld().spawnEntity(loc, type);
+		LivingEntity e = (LivingEntity) loc.getWorld().spawnEntity(loc.clone().add((Math.random() - 0.5) * 0.1, 0, (Math.random() - 0.5) * 0.1), type);
 		e.setCanPickupItems(true);
-		if (vel.length() > 0){
-			e.teleport(loc);
+		if (vel.length() > 0)
 			e.setVelocity(vel);
-		}
 		if (!flags.name.isEmpty()) {
 			e.setCustomName(flags.name.get(new Random().nextInt(flags.name.size())));
 			if (e.getCustomName().contains("rand")) {
@@ -394,6 +407,13 @@ public class MobMaster extends JavaPlugin implements Listener {
 	public void debugMobFlags(PlayerInteractEntityEvent event){
 		if(event.getPlayer().getItemInHand().getType() == Material.RED_MUSHROOM && Utils.isMasterMob(event.getRightClicked()))
 			event.getPlayer().sendMessage("[TICK_" + ShooterMobs.tick + "] " + ((MobFlags) event.getRightClicked().getMetadata("mob-flags").get(0).value()).toString());
+	}
+	
+	@EventHandler
+	public void mobspawnCommandBinds(PlayerInteractEvent event){
+		Player player = event.getPlayer();
+		if(event.getAction() == Action.RIGHT_CLICK_AIR && binds.containsKey(player) && binds.get(player).containsKey(event.getItem()))
+			player.performCommand(binds.get(player).get(event.getItem()));
 	}
 	
 	@EventHandler
