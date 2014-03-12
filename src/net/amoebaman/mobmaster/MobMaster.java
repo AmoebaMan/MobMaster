@@ -26,6 +26,8 @@ import org.bukkit.potion.PotionEffect;
 import org.bukkit.potion.PotionEffectType;
 import org.bukkit.util.Vector;
 
+import com.google.common.collect.Lists;
+
 import net.amoebaman.mobmaster.MobFlags.ArmorType;
 import net.amoebaman.utils.CommandController;
 import net.amoebaman.utils.CommandController.CommandHandler;
@@ -33,8 +35,6 @@ import net.amoebaman.utils.maps.PlayerMap;
 import net.amoebaman.utils.plugin.MetricsLite;
 import net.amoebaman.utils.plugin.Updater;
 import net.amoebaman.utils.plugin.Updater.UpdateType;
-
-import net.minecraft.util.com.google.common.collect.Lists;
 
 public class MobMaster extends JavaPlugin implements Listener {
 	
@@ -323,12 +323,10 @@ public class MobMaster extends JavaPlugin implements Listener {
 	public void spawnMob(Location loc, Vector vel, EntityType type, MobFlags flags) {
 		if (!(type.isSpawnable() && type.isAlive()))
 			return;
-		LivingEntity e = (LivingEntity) loc.getWorld().spawnEntity(loc, type);
+		LivingEntity e = (LivingEntity) loc.getWorld().spawnEntity(loc.clone().add((Math.random() - 0.5) * 0.1, 0, (Math.random() - 0.5) * 0.1), type);
 		e.setCanPickupItems(true);
-		if (vel.length() > 0){
-			e.teleport(loc);
+		if (vel.length() > 0)
 			e.setVelocity(vel);
-		}
 		if (!flags.name.isEmpty()) {
 			e.setCustomName(flags.name.get(new Random().nextInt(flags.name.size())));
 			if (e.getCustomName().contains("rand")) {
