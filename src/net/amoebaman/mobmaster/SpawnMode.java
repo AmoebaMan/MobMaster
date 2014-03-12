@@ -6,6 +6,5 @@ public enum SpawnMode {
 	BOMB,
 	FOUNTAIN,
 	CHAIN,
-	;
 	
 }
