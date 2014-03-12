@@ -27,6 +27,7 @@ import org.bukkit.util.Vector;
 import net.amoebaman.mobmaster.MobFlags.ArmorType;
 import net.amoebaman.utils.CommandController;
 import net.amoebaman.utils.CommandController.CommandHandler;
+import net.amoebaman.utils.maps.PlayerMap;
 import net.amoebaman.utils.plugin.MetricsLite;
 import net.amoebaman.utils.plugin.Updater;
 import net.amoebaman.utils.plugin.Updater.UpdateType;
@@ -36,6 +37,7 @@ import net.minecraft.util.com.google.common.collect.Lists;
 public class MobMaster extends JavaPlugin implements Listener {
 	
 	private List<String> boyNames = new ArrayList<String>(), girlNames = new ArrayList<String>();
+	private PlayerMap<Map<ItemStack, String>> binds = new PlayerMap<Map<ItemStack, String>>();
 	
 	public void onEnable() {
 		
@@ -167,6 +169,15 @@ public class MobMaster extends JavaPlugin implements Listener {
 				}
 				if(flag.startsWith("c"))
 					try{ flags.counter = Float.parseFloat(value); } catch(Exception e){}
+				if(flag.equals("bind") && sender instanceof Player && ((Player) sender).getItemInHand() != null){
+					Player player = (Player) sender;
+					String fullCmd = "mobspawn " + type.name() + (flags.tag.isEmpty() ? "" : ":" + flags.tag) + " " + amount;
+					for(String arg : args)
+						fullCmd += " " + arg;
+					if(!binds.containsKey(player))
+						binds.put(player, new HashMap<ItemStack, String>());
+					binds.get(player).put(player.getItemInHand(), fullCmd);
+				}
 			}
 		
 		if (loc == null) {
