@@ -1,8 +1,6 @@
 package net.amoebaman.mobmaster;
 
-import java.util.ArrayList;
 import java.util.List;
-import java.util.Scanner;
 
 import org.bukkit.ChatColor;
 import org.bukkit.entity.EntityType;
@@ -71,21 +69,6 @@ public class Utils {
 		if(name.contains("night")) return PotionEffectType.NIGHT_VISION;
 		if(name.contains("wither")) return PotionEffectType.WITHER;
 		return PotionEffectType.getByName(name.toUpperCase().replace(' ', '_'));
-	}
-	
-	static List<String> getRandomNames(String affiliation) {
-		List<String> names = new ArrayList<String>();
-		if(affiliation.contains("b")){
-			Scanner s = new Scanner(MobMaster.plugin().getResource("boy_names.txt")).useDelimiter("\\n");
-			while(s.hasNext())
-				names.add(s.next());
-		}
-		if(affiliation.contains("g")){
-			Scanner s = new Scanner(MobMaster.plugin().getResource("girl_names.txt")).useDelimiter("\\n");
-			while(s.hasNext())
-				names.add(s.next());
-		}
-	    return names;
 	}
 	
 }

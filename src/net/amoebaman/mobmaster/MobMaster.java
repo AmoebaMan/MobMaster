@@ -1,57 +1,53 @@
 package net.amoebaman.mobmaster;
 
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 import java.util.Map.Entry;
-import java.util.Random;
 
-import net.amoebaman.utils.CommandController;
-import net.amoebaman.utils.CommandController.CommandHandler;
-import net.amoebaman.utils.plugin.MetricsLite;
-import net.amoebaman.utils.plugin.Updater;
-import net.amoebaman.utils.plugin.Updater.UpdateType;
-import net.minecraft.util.com.google.common.collect.Lists;
-
-import org.bukkit.Bukkit;
-import org.bukkit.ChatColor;
-import org.bukkit.DyeColor;
-import org.bukkit.Location;
+import org.bukkit.*;
 import org.bukkit.command.BlockCommandSender;
 import org.bukkit.command.CommandSender;
-import org.bukkit.entity.Ageable;
-import org.bukkit.entity.Animals;
-import org.bukkit.entity.Creeper;
-import org.bukkit.entity.Entity;
-import org.bukkit.entity.EntityType;
-import org.bukkit.entity.LivingEntity;
-import org.bukkit.entity.Monster;
-import org.bukkit.entity.Pig;
-import org.bukkit.entity.PigZombie;
-import org.bukkit.entity.Player;
-import org.bukkit.entity.Projectile;
-import org.bukkit.entity.Sheep;
-import org.bukkit.entity.Skeleton;
+import org.bukkit.entity.*;
 import org.bukkit.entity.Skeleton.SkeletonType;
-import org.bukkit.entity.Slime;
-import org.bukkit.entity.Villager;
 import org.bukkit.entity.Villager.Profession;
-import org.bukkit.entity.Zombie;
 import org.bukkit.entity.minecart.CommandMinecart;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
 import org.bukkit.event.entity.EntityDamageByEntityEvent;
 import org.bukkit.event.entity.EntityDamageEvent;
 import org.bukkit.event.entity.EntityDeathEvent;
+import org.bukkit.event.player.PlayerInteractEntityEvent;
+import org.bukkit.inventory.EntityEquipment;
+import org.bukkit.inventory.ItemStack;
 import org.bukkit.metadata.FixedMetadataValue;
 import org.bukkit.plugin.java.JavaPlugin;
 import org.bukkit.potion.PotionEffect;
 import org.bukkit.potion.PotionEffectType;
 import org.bukkit.util.Vector;
 
+import net.amoebaman.mobmaster.MobFlags.ArmorType;
+import net.amoebaman.utils.CommandController;
+import net.amoebaman.utils.CommandController.CommandHandler;
+import net.amoebaman.utils.plugin.MetricsLite;
+import net.amoebaman.utils.plugin.Updater;
+import net.amoebaman.utils.plugin.Updater.UpdateType;
+
+import net.minecraft.util.com.google.common.collect.Lists;
+
 public class MobMaster extends JavaPlugin implements Listener {
 	
+	private List<String> boyNames = new ArrayList<String>(), girlNames = new ArrayList<String>();
+	
 	public void onEnable() {
+		
+		Scanner s;
+		s = new Scanner(MobMaster.plugin().getResource("boy_names.txt")).useDelimiter("\\n");
+		while(s.hasNext())
+			boyNames.add(s.next());
+		s = new Scanner(MobMaster.plugin().getResource("girl_names.txt")).useDelimiter("\\n");
+		while(s.hasNext())
+			girlNames.add(s.next());
+		
+		Bukkit.getScheduler().scheduleSyncRepeatingTask(this, new ShooterMobs(), 0L, 4L);
 		Bukkit.getPluginManager().registerEvents(this, this);
 		CommandController.registerCommands(this);
 		
@@ -162,6 +158,15 @@ public class MobMaster extends JavaPlugin implements Listener {
 					}
 					catch (Exception e) {}
 				}
+				if(flag.startsWith("a"))
+					flags.armor = ArmorType.fromString(value);
+				if(flag.startsWith("s")) {
+					String[] split = value.split(",");
+					if(split.length >= 2)
+						try{ flags = flags.withProjectile(Utils.matchName(split[0]), Integer.parseInt(split[1])); } catch(Exception e){}
+				}
+				if(flag.startsWith("c"))
+					try{ flags.counter = Float.parseFloat(value); } catch(Exception e){}
 			}
 		
 		if (loc == null) {
@@ -305,13 +310,19 @@ public class MobMaster extends JavaPlugin implements Listener {
 			return;
 		LivingEntity e = (LivingEntity) loc.getWorld().spawnEntity(loc, type);
 		e.setCanPickupItems(true);
-		if (vel.length() > 0)
+		if (vel.length() > 0){
+			e.teleport(loc);
 			e.setVelocity(vel);
+		}
 		if (!flags.name.isEmpty()) {
 			e.setCustomName(flags.name.get(new Random().nextInt(flags.name.size())));
 			if (e.getCustomName().contains("rand")) {
-				List<String> rand = Utils.getRandomNames(e.getCustomName().contains("b") ? "b" : e.getCustomName().contains("g") ? "g" : "bg");
-				e.setCustomName(rand.get(new Random().nextInt(rand.size())));
+				List<String> options;
+				if(e.getCustomName().contains("b") ^ e.getCustomName().contains("g"))
+					options = e.getCustomName().contains("b") ? boyNames : girlNames;
+				else
+					options = Math.random() > 0.5 ? boyNames : girlNames;
+				e.setCustomName(options.get(new Random().nextInt(options.size())));
 			}
 			e.setCustomNameVisible(true);
 			e.setRemoveWhenFarAway(false);
@@ -361,6 +372,14 @@ public class MobMaster extends JavaPlugin implements Listener {
 			}
 		}
 		
+		if(flags.armor != null){
+			EntityEquipment equip = e.getEquipment();
+			equip.setHelmet(new ItemStack(Material.matchMaterial(flags.armor.name() + "_HELMET")));
+			equip.setChestplate(new ItemStack(Material.matchMaterial(flags.armor.name() + "_CHESTPLATE")));
+			equip.setLeggings(new ItemStack(Material.matchMaterial(flags.armor.name() + "_LEGGINGS")));
+			equip.setBoots(new ItemStack(Material.matchMaterial(flags.armor.name() + "_BOOTS")));
+		}
+		
 		for (Entry<PotionEffectType, Integer> entry : flags.effects.entrySet())
 			e.addPotionEffect(new PotionEffect(entry.getKey(), Integer.MAX_VALUE, entry.getValue()));
 		
@@ -372,13 +391,25 @@ public class MobMaster extends JavaPlugin implements Listener {
 	}
 	
 	@EventHandler
-	public void applyDamageModifier(EntityDamageEvent event) {
+	public void debugMobFlags(PlayerInteractEntityEvent event){
+		if(event.getPlayer().getItemInHand().getType() == Material.RED_MUSHROOM && Utils.isMasterMob(event.getRightClicked()))
+			event.getPlayer().sendMessage("[TICK_" + ShooterMobs.tick + "] " + ((MobFlags) event.getRightClicked().getMetadata("mob-flags").get(0).value()).toString());
+	}
+	
+	@EventHandler
+	public void applyDamageModifier(final EntityDamageEvent event) {
 		if (event instanceof EntityDamageByEntityEvent) {
 			Entity e = ((EntityDamageByEntityEvent) event).getDamager();
 			if (e instanceof Projectile && ((Projectile) e).getShooter() instanceof Entity)
 				e = (Entity) ((Projectile) e).getShooter();
 			if (e instanceof LivingEntity && Utils.isMasterMob(e))
 				event.setDamage(event.getDamage() * ((MobFlags) e.getMetadata("mob-flags").get(0).value()).damage);
+			final Entity d = e;
+			final Entity v = event.getEntity();
+			if(Utils.isMasterMob(v) && d instanceof LivingEntity)
+				Bukkit.getScheduler().scheduleSyncDelayedTask(this, new Runnable(){ public void run(){
+					((LivingEntity) d).damage(event.getDamage() * ((MobFlags) v.getMetadata("mob-flags").get(0).value()).counter, v);
+				}}, 2L);
 		}
 	}
 	
@@ -389,6 +420,28 @@ public class MobMaster extends JavaPlugin implements Listener {
 			MobFlags flags = (MobFlags) e.getMetadata("mob-flags").get(0).value();
 			if (flags.explosion > 0)
 				e.getWorld().createExplosion(e.getLocation(), flags.explosion, flags.incendiary);
+		}
+	}
+	
+	public static class ShooterMobs implements Runnable {
+		
+		static int tick = 0;
+		public void run(){
+			
+			for(World world : Bukkit.getWorlds())
+				for(final LivingEntity e : world.getLivingEntities())
+					if(Utils.isMasterMob(e)){
+						final MobFlags flags = (MobFlags) e.getMetadata("mob-flags").get(0).value();
+						if(flags.projectile != null && flags.rateOfFire >  0 && tick % flags.rateOfFire == 0)
+							Bukkit.getScheduler().scheduleSyncDelayedTask(MobMaster.plugin(), new Runnable(){ public void run(){
+								e.launchProjectile((Class<? extends Projectile>)flags.projectile.getEntityClass());
+							}}, (long) (Math.random() * 4));
+					}
+			
+			tick++;
+			if(tick > 50)
+				tick = 0;
+			
 		}
 	}
 	
