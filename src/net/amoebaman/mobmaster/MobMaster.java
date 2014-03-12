@@ -12,10 +12,12 @@ import org.bukkit.entity.Villager.Profession;
 import org.bukkit.entity.minecart.CommandMinecart;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
+import org.bukkit.event.block.Action;
 import org.bukkit.event.entity.EntityDamageByEntityEvent;
 import org.bukkit.event.entity.EntityDamageEvent;
 import org.bukkit.event.entity.EntityDeathEvent;
 import org.bukkit.event.player.PlayerInteractEntityEvent;
+import org.bukkit.event.player.PlayerInteractEvent;
 import org.bukkit.inventory.EntityEquipment;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.metadata.FixedMetadataValue;
@@ -171,11 +173,13 @@ public class MobMaster extends JavaPlugin implements Listener {
 					try{ flags.counter = Float.parseFloat(value); } catch(Exception e){}
 				if(flag.equals("bind") && sender instanceof Player && ((Player) sender).getItemInHand() != null){
 					Player player = (Player) sender;
+					
 					String fullCmd = "mobspawn " + type.name() + (flags.tag.isEmpty() ? "" : ":" + flags.tag) + " " + amount;
 					for(String arg : args)
 						fullCmd += " " + arg;
 					if(!binds.containsKey(player))
 						binds.put(player, new HashMap<ItemStack, String>());
+					
 					binds.get(player).put(player.getItemInHand(), fullCmd);
 				}
 			}
@@ -405,6 +409,13 @@ public class MobMaster extends JavaPlugin implements Listener {
 	public void debugMobFlags(PlayerInteractEntityEvent event){
 		if(event.getPlayer().getItemInHand().getType() == Material.RED_MUSHROOM && Utils.isMasterMob(event.getRightClicked()))
 			event.getPlayer().sendMessage("[TICK_" + ShooterMobs.tick + "] " + ((MobFlags) event.getRightClicked().getMetadata("mob-flags").get(0).value()).toString());
+	}
+	
+	@EventHandler
+	public void mobspawnCommandBinds(PlayerInteractEvent event){
+		Player player = event.getPlayer();
+		if(event.getAction() == Action.RIGHT_CLICK_AIR && binds.containsKey(player) && binds.get(player).containsKey(event.getItem()))
+			player.performCommand(binds.get(player).get(event.getItem()));
 	}
 	
 	@EventHandler
