@@ -31,6 +31,8 @@ import com.google.common.collect.Lists;
 import net.amoebaman.mobmaster.MobFlags.ArmorType;
 import net.amoebaman.utils.CommandController;
 import net.amoebaman.utils.CommandController.CommandHandler;
+import net.amoebaman.utils.chat.Chat;
+import net.amoebaman.utils.chat.Scheme;
 import net.amoebaman.utils.maps.PlayerMap;
 import net.amoebaman.utils.plugin.MetricsLite;
 import net.amoebaman.utils.plugin.Updater;
@@ -71,7 +73,7 @@ public class MobMaster extends JavaPlugin implements Listener {
 	public void mobspawn_cmd(final CommandSender sender, String[] args) {
 		
 		if (args.length < 1) {
-			sender.sendMessage(ChatColor.RED + "Include at least the mob type to spawn");
+			sender.sendMessage(Chat.format("&xInclude at least the mob type to spawn", Scheme.ERROR));
 			return;
 		}
 		
@@ -82,7 +84,7 @@ public class MobMaster extends JavaPlugin implements Listener {
 		}
 		EntityType type = Utils.matchName(args[0]);
 		if (type == null || !type.isAlive() || !type.isSpawnable()) {
-			sender.sendMessage(ChatColor.RED + "Mob type not recognized or not spawnable (might be too complex)");
+			sender.sendMessage(Chat.format("&xMob type not recognized or not spawnable (might be too complex)", Scheme.ERROR));
 			return;
 		}
 		
@@ -185,8 +187,8 @@ public class MobMaster extends JavaPlugin implements Listener {
 			}
 		
 		if (loc == null) {
-			sender.sendMessage(ChatColor.RED + "Sorry guy, you can't spawn mobs without a reference location");
-			sender.sendMessage(ChatColor.RED + "If you're on console, try adding \"t:<player>\" or \"t:(<x>,<y>,<z>)\" to the command");
+			sender.sendMessage(Chat.format("&xSorry guy, you can't spawn mobs without a reference location", Scheme.ERROR));
+			sender.sendMessage(Chat.format("&xIf you're on console, try adding &z\"t:<player>\"&x or &z\"t:(<x>,<y>,<z>)\"&x to the command", Scheme.ERROR));
 			return;
 		}
 		
@@ -297,8 +299,8 @@ public class MobMaster extends JavaPlugin implements Listener {
 			}
 		
 		if (loc == null) {
-			sender.sendMessage(ChatColor.RED + "Sorry guy, you can't slaughter mobs without a reference location");
-			sender.sendMessage(ChatColor.RED + "If you're on console, try adding \"t:<player>\" or \"t:(<x>,<y>,<z>)\" to the command");
+			sender.sendMessage(Chat.format("&xSorry guy, you can't slaughter mobs without a reference location", Scheme.ERROR));
+			sender.sendMessage(Chat.format("&xIf you're on console, try adding &z\"t:<player>\"&x or &z\"t:(<x>,<y>,<z>)\"&x to the command", Scheme.ERROR));
 			return;
 		}
 		
@@ -317,7 +319,7 @@ public class MobMaster extends JavaPlugin implements Listener {
 						count++;
 					}
 				}
-		sender.sendMessage("Slaughtered " + count + " mobs");
+		sender.sendMessage(Chat.format("&xSlaughtered &z" + count + "&x mobs", Scheme.NORMAL));
 	}
 	
 	public void spawnMob(Location loc, Vector vel, EntityType type, MobFlags flags) {
@@ -406,7 +408,7 @@ public class MobMaster extends JavaPlugin implements Listener {
 	@EventHandler
 	public void debugMobFlags(PlayerInteractEntityEvent event){
 		if(event.getPlayer().getItemInHand().getType() == Material.RED_MUSHROOM && Utils.isMasterMob(event.getRightClicked()))
-			event.getPlayer().sendMessage("[TICK_" + ShooterMobs.tick + "] " + ((MobFlags) event.getRightClicked().getMetadata("mob-flags").get(0).value()).toString());
+			event.getPlayer().sendMessage(Chat.format("&z[tick_" + ShooterMobs.tick + "]&x " + ((MobFlags) event.getRightClicked().getMetadata("mob-flags").get(0).value()).toString(), Scheme.NORMAL));
 	}
 	
 	@EventHandler
