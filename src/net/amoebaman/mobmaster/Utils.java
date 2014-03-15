@@ -20,7 +20,7 @@ public class Utils {
 	}
 	
 	public static boolean isMasterMob(Entity e){
-		return e.hasMetadata("master-mob");
+		return e.hasMetadata("mob-flags");
 	}
 	
 	public static String makeProgressBar(int length, int total, List<ChatColor> colors, List<Integer> values){

@@ -419,7 +419,6 @@ public class MobMaster extends JavaPlugin implements Listener{
 		e.setMaxHealth(e.getMaxHealth() * flags.health);
 		e.setHealth(e.getMaxHealth());
 		
-		e.setMetadata("master-mob", new FixedMetadataValue(this, true));
 		e.setMetadata("mob-flags", new FixedMetadataValue(this, flags));
 	}
 	
