@@ -16,6 +16,7 @@ public class MobFlags {
 	public EntityType projectile;
 	public int rateOfFire;
 	public ArmorType armor;
+	public boolean overlord;
 	
 	public MobFlags(){
 		tag = "";
@@ -55,9 +56,11 @@ public class MobFlags {
 	public MobFlags withCounter(float counter){ this.counter = counter; return this; }
 	public MobFlags withExplosion(float explosion, boolean incendiary){ this.explosion = explosion; this.incendiary = incendiary; return this; }
 	public MobFlags withArmor(ArmorType armor){ this.armor = armor; return this; }
+	public MobFlags asOverlord(){ this.overlord = true; return this; }
 	
 	public String toString(){
-		return "name:" + name + ",effects:" + effects + ",health=" + health + ",damage=" + damage + ",counter=" + counter + ",explode=" + explosion + (incendiary ? "f" : "e") + ",projectile=" + projectile + "," + rateOfFire + ",armor=" + armor;
+		return "name:" + name + ",effects:" + effects + ",health=" + health + ",damage=" + damage + ",counter=" + counter + ",explode=" + explosion + (incendiary ? "f" : "e")
+				+ ",projectile=" + projectile + "," + rateOfFire + ",armor=" + armor + ",overlord=" + overlord;
 	}
 	
 	protected enum ArmorType {

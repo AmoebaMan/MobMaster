@@ -38,12 +38,13 @@ import net.amoebaman.utils.plugin.MetricsLite;
 import net.amoebaman.utils.plugin.Updater;
 import net.amoebaman.utils.plugin.Updater.UpdateType;
 
-public class MobMaster extends JavaPlugin implements Listener {
+public class MobMaster extends JavaPlugin implements Listener{
 	
-	private List<String> boyNames = new ArrayList<String>(), girlNames = new ArrayList<String>();
+	private List<String> boyNames = new ArrayList<String>(),
+	    girlNames = new ArrayList<String>();
 	private PlayerMap<Map<ItemStack, String>> binds = new PlayerMap<Map<ItemStack, String>>();
 	
-	public void onEnable() {
+	public void onEnable(){
 		
 		Scanner s;
 		s = new Scanner(MobMaster.plugin().getResource("boy_names.txt")).useDelimiter("\\n");
@@ -57,8 +58,12 @@ public class MobMaster extends JavaPlugin implements Listener {
 		Bukkit.getPluginManager().registerEvents(this, this);
 		CommandController.registerCommands(this);
 		
-		try { new MetricsLite(this).start(); }
-		catch (Exception e) { e.printStackTrace(); }
+		try{
+			new MetricsLite(this).start();
+		}
+		catch(Exception e){
+			e.printStackTrace();
+		}
 		
 		Updater.checkConfig();
 		if(Updater.isEnabled())
@@ -66,83 +71,87 @@ public class MobMaster extends JavaPlugin implements Listener {
 		
 	}
 	
-	public static JavaPlugin plugin() { return (JavaPlugin) Bukkit.getPluginManager().getPlugin("MobMaster"); }
+	public static JavaPlugin plugin(){
+		return (JavaPlugin) Bukkit.getPluginManager().getPlugin("MobMaster");
+	}
 	
 	@SuppressWarnings("deprecation")
 	@CommandHandler(cmd = "mobspawn")
-	public void mobspawn_cmd(final CommandSender sender, String[] args) {
+	public void mobspawn_cmd(final CommandSender sender, String[] args){
 		
-		if (args.length < 1) {
+		if(args.length < 1){
 			sender.sendMessage(Chat.format("&xInclude at least the mob type to spawn", Scheme.ERROR));
 			return;
 		}
 		
 		MobFlags flags = new MobFlags();
-		if (args[0].contains(":")) {
+		if(args[0].contains(":")){
 			flags.tag = args[0].split(":")[1];
 			args[0] = args[0].split(":")[0];
 		}
+		if(flags.tag.contains("over"))
+			flags.overlord = true;
 		EntityType type = Utils.matchName(args[0]);
-		if (type == null || !type.isAlive() || !type.isSpawnable()) {
+		if(type == null || !type.isAlive() || !type.isSpawnable()){
 			sender.sendMessage(Chat.format("&xMob type not recognized or not spawnable (might be too complex)", Scheme.ERROR));
 			return;
 		}
 		
 		Location loc = null;
-		if (sender instanceof Player)
+		if(sender instanceof Player)
 			loc = ((Player) sender).getLastTwoTargetBlocks(null, 250).get(0).getLocation().add(0.5, 0.5, 0.5);
-		if (sender instanceof BlockCommandSender)
+		if(sender instanceof BlockCommandSender)
 			loc = ((BlockCommandSender) sender).getBlock().getLocation().add(0.5, 1.5, 0.5);
-		if (sender instanceof CommandMinecart)
+		if(sender instanceof CommandMinecart)
 			loc = ((CommandMinecart) sender).getLocation();
 		
 		int amount = 1;
-		if (args.length >= 2) {
-			try {
+		if(args.length >= 2){
+			try{
 				amount = Integer.parseInt(args[1]);
 			}
-			catch (NumberFormatException nfe) {}
+			catch(NumberFormatException nfe){}
 		}
 		
 		SpawnMode mode = SpawnMode.STATIC;
 		
-		if (args.length >= 3)
-			for (int i = 2; i < args.length; i++) {
+		if(args.length >= 3)
+			for(int i = 2; i < args.length; i++){
 				String flag = args[i].contains(":") ? args[i].substring(0, args[i].indexOf(':')) : args[i];
 				String value = args[i].contains(":") ? args[i].substring(args[i].indexOf(':') + 1) : "";
 				
-				if (flag.startsWith("n"))
+				if(flag.startsWith("n"))
 					flags.name.addAll(Lists.newArrayList(value.replace('_', ' ').split(",")));
 				PotionEffectType effect = Utils.matchPotionEffect(flag);
-				if (effect != null) {
-					try {
+				if(effect != null){
+					try{
 						flags.effects.put(effect, Integer.parseInt(value));
 					}
-					catch (Exception e) {}
+					catch(Exception e){}
 				}
-				if (flag.startsWith("m")) {
+				if(flag.startsWith("m")){
 					mode = SpawnMode.valueOf(value.toUpperCase());
-					if (mode == null)
+					if(mode == null)
 						mode = SpawnMode.STATIC;
 				}
-				if (flag.startsWith("h")) {
-					try {
+				if(flag.startsWith("h")){
+					try{
 						flags.health = Float.parseFloat(value);
 					}
-					catch (Exception e) {}
+					catch(Exception e){}
 				}
-				if (flag.startsWith("d")) {
-					try {
+				if(flag.startsWith("d")){
+					try{
 						flags.damage = Float.parseFloat(value);
 					}
-					catch (Exception e) {}
+					catch(Exception e){}
 				}
-				if (flag.startsWith("t")) {
-					if (Bukkit.getPlayer(value) != null)
+				if(flag.startsWith("t")){
+					if(Bukkit.getPlayer(value) != null)
 						loc = Bukkit.getPlayer(value).getLocation();
-					else {
+					else{
 						String[] split = value.split(",");
-						try {
+						try{
 							if(loc == null)
 								loc = new Location(Bukkit.getWorld(split[0]), Integer.parseInt(split[1]) + 0.5, Integer.parseInt(split[2]) + 0.5, Integer.parseInt(split[3]) + 0.5);
 							else{
@@ -151,28 +160,34 @@ public class MobMaster extends JavaPlugin implements Listener {
 								loc.setZ(Integer.parseInt(split[2]) + 0.5);
 							}
 						}
-						catch (Exception e) {}
+						catch(Exception e){}
 					}
 				}
-				if (flag.startsWith("e")) {
-					if (value.contains("f")) {
+				if(flag.startsWith("e")){
+					if(value.contains("f")){
 						flags.incendiary = true;
 						value = value.replace("f", "");
 					}
-					try {
+					try{
 						flags.explosion = Float.parseFloat(value);
 					}
-					catch (Exception e) {}
+					catch(Exception e){}
 				}
 				if(flag.startsWith("a"))
 					flags.armor = ArmorType.fromString(value);
-				if(flag.startsWith("s")) {
+				if(flag.startsWith("s")){
 					String[] split = value.split(",");
 					if(split.length >= 2)
-						try{ flags = flags.withProjectile(Utils.matchName(split[0]), Integer.parseInt(split[1])); } catch(Exception e){}
+						try{
+							flags = flags.withProjectile(Utils.matchName(split[0]), Integer.parseInt(split[1]));
+						}
+						catch(Exception e){}
 				}
 				if(flag.startsWith("c"))
-					try{ flags.counter = Float.parseFloat(value); } catch(Exception e){}
+					try{
+						flags.counter = Float.parseFloat(value);
+					}
+					catch(Exception e){}
 				if(flag.equals("bind") && sender instanceof Player && ((Player) sender).getItemInHand() != null){
 					Player player = (Player) sender;
 					
@@ -184,9 +199,11 @@ public class MobMaster extends JavaPlugin implements Listener {
 					
 					binds.get(player).put(player.getItemInHand(), fullCmd);
 				}
+				if(flag.startsWith("o"))
+					flags.overlord = true;
 			}
 		
-		if (loc == null) {
+		if(loc == null){
 			sender.sendMessage(Chat.format("&xSorry guy, you can't spawn mobs without a reference location", Scheme.ERROR));
 			sender.sendMessage(Chat.format("&xIf you're on console, try adding &z\"t:<player>\"&x or &z\"t:(<x>,<y>,<z>)\"&x to the command", Scheme.ERROR));
 			return;
@@ -196,30 +213,32 @@ public class MobMaster extends JavaPlugin implements Listener {
 		final Location fLoc = loc;
 		final MobFlags fFlags = flags;
 		
-		switch (mode) {
+		switch(mode){
 			case STATIC:
-				for (int i = 0; i < amount; i++)
+				for(int i = 0; i < amount; i++)
 					spawnMob(loc, new Vector(0, 0, 0), type, flags);
 				break;
 			case BOMB:
-				for (int i = 0; i < amount; i++)
+				for(int i = 0; i < amount; i++)
 					spawnMob(loc, new Vector(Math.random() - 0.5, Math.random() * 0.75, Math.random() - 0.5), type, flags);
 				break;
 			case CHAIN:
-				for (int i = 0; i < amount; i++)
-					Bukkit.getScheduler().scheduleSyncDelayedTask(this, new Runnable() {
-						public void run() {
+				for(int i = 0; i < amount; i++)
+					Bukkit.getScheduler().scheduleSyncDelayedTask(this, new Runnable(){
+						
+						public void run(){
 							Location target = fLoc;
-							if (sender instanceof Player)
+							if(sender instanceof Player)
 								target = ((Player) sender).getTargetBlock(null, 250).getLocation();
 							spawnMob(target, new Vector(0, 0, 0), fType, fFlags);
 						}
 					}, i * 5);
 				break;
 			case FOUNTAIN:
-				for (int i = 0; i < amount; i++)
-					Bukkit.getScheduler().scheduleSyncDelayedTask(this, new Runnable() {
-						public void run() {
+				for(int i = 0; i < amount; i++)
+					Bukkit.getScheduler().scheduleSyncDelayedTask(this, new Runnable(){
+						
+						public void run(){
 							spawnMob(fLoc, new Vector(Math.random() - 0.5, Math.random() * 0.75, Math.random() - 0.5), fType, fFlags);
 						}
 					}, i * 5);
@@ -230,35 +249,35 @@ public class MobMaster extends JavaPlugin implements Listener {
 	
 	@SuppressWarnings("deprecation")
 	@CommandHandler(cmd = "mobkill")
-	public void mobkill_cmd(CommandSender sender, String[] args) {
+	public void mobkill_cmd(CommandSender sender, String[] args){
 		Location loc = null;
-		if (sender instanceof Player)
+		if(sender instanceof Player)
 			loc = ((Player) sender).getLastTwoTargetBlocks(null, 250).get(0).getLocation().add(0.5, 0.5, 0.5);
-		if (sender instanceof BlockCommandSender)
+		if(sender instanceof BlockCommandSender)
 			loc = ((BlockCommandSender) sender).getBlock().getLocation().add(0.5, 1.5, 0.5);
-		if (sender instanceof CommandMinecart)
+		if(sender instanceof CommandMinecart)
 			loc = ((CommandMinecart) sender).getLocation();
 		
 		int radius = 0;
 		Map<EntityType, Boolean> which = new HashMap<EntityType, Boolean>();
 		boolean monsters = true, animals = false, villagers = false, others = false;
 		
-		if (args.length >= 1)
-			for (int i = 0; i < args.length; i++) {
+		if(args.length >= 1)
+			for(int i = 0; i < args.length; i++){
 				String flag = args[i].contains(":") ? args[i].substring(0, args[i].indexOf(':')) : args[i];
 				String value = args[i].contains(":") ? args[i].substring(args[i].indexOf(':') + 1) : "";
-				if (flag.startsWith("r")) {
-					try {
+				if(flag.startsWith("r")){
+					try{
 						radius = Integer.parseInt(value);
 					}
-					catch (Exception e) {}
+					catch(Exception e){}
 				}
-				if (flag.startsWith("t")) {
-					if (Bukkit.getPlayer(value) != null)
+				if(flag.startsWith("t")){
+					if(Bukkit.getPlayer(value) != null)
 						loc = Bukkit.getPlayer(value).getLocation();
-					else {
+					else{
 						String[] split = value.split(",");
-						try {
+						try{
 							if(loc == null)
 								loc = new Location(Bukkit.getWorld(split[0]), Integer.parseInt(split[1]) + 0.5, Integer.parseInt(split[2]) + 0.5, Integer.parseInt(split[3]) + 0.5);
 							else{
@@ -267,54 +286,53 @@ public class MobMaster extends JavaPlugin implements Listener {
 								loc.setZ(Integer.parseInt(split[2]) + 0.5);
 							}
 						}
-						catch (Exception e) {}
+						catch(Exception e){}
 					}
 				}
-				if (flag.startsWith("+")) {
-					if (flag.contains("m"))
+				if(flag.startsWith("+")){
+					if(flag.contains("m"))
 						monsters = true;
-					if (flag.contains("a"))
+					if(flag.contains("a"))
 						animals = true;
-					if (flag.contains("v"))
+					if(flag.contains("v"))
 						villagers = true;
-					if (flag.contains("o"))
+					if(flag.contains("o"))
 						others = true;
 				}
-				if (flag.startsWith("-")) {
-					if (flag.contains("m"))
+				if(flag.startsWith("-")){
+					if(flag.contains("m"))
 						monsters = false;
-					if (flag.contains("a"))
+					if(flag.contains("a"))
 						animals = false;
-					if (flag.contains("v"))
+					if(flag.contains("v"))
 						villagers = false;
-					if (flag.contains("o"))
+					if(flag.contains("o"))
 						others = false;
 				}
-				if (Utils.matchName(flag) != null) {
-					try {
+				if(Utils.matchName(flag) != null){
+					try{
 						which.put(Utils.matchName(flag), Boolean.parseBoolean(value));
 					}
-					catch (Exception e) {}
+					catch(Exception e){}
 				}
 			}
 		
-		if (loc == null) {
+		if(loc == null){
 			sender.sendMessage(Chat.format("&xSorry guy, you can't slaughter mobs without a reference location", Scheme.ERROR));
 			sender.sendMessage(Chat.format("&xIf you're on console, try adding &z\"t:<player>\"&x or &z\"t:(<x>,<y>,<z>)\"&x to the command", Scheme.ERROR));
 			return;
 		}
 		
 		int count = 0;
-		for (LivingEntity e : loc.getWorld().getEntitiesByClass(LivingEntity.class))
-			if (!(e instanceof Player))
-				if (radius == 0 ^ e.getLocation().distance(loc) < radius) {
+		for(LivingEntity e : loc.getWorld().getEntitiesByClass(LivingEntity.class))
+			if(!(e instanceof Player))
+				if(radius == 0 ^ e.getLocation().distance(loc) < radius){
 					boolean remove;
-					if (which.containsKey(e.getType()))
+					if(which.containsKey(e.getType()))
 						remove = which.get(e.getType());
 					else
-						remove = e instanceof Monster && monsters || e instanceof Animals && animals || e instanceof Villager && villagers || others && !(e instanceof Monster)
-						        && !(e instanceof Animals) && !(e instanceof Villager);
-					if (remove) {
+						remove = e instanceof Monster && monsters || e instanceof Animals && animals || e instanceof Villager && villagers || others && !(e instanceof Monster) && !(e instanceof Animals) && !(e instanceof Villager);
+					if(remove){
 						e.remove();
 						count++;
 					}
@@ -322,16 +340,16 @@ public class MobMaster extends JavaPlugin implements Listener {
 		sender.sendMessage(Chat.format("&xSlaughtered &z" + count + "&x mobs", Scheme.NORMAL));
 	}
 	
-	public void spawnMob(Location loc, Vector vel, EntityType type, MobFlags flags) {
-		if (!(type.isSpawnable() && type.isAlive()))
+	public void spawnMob(Location loc, Vector vel, EntityType type, MobFlags flags){
+		if(!(type.isSpawnable() && type.isAlive()))
 			return;
 		LivingEntity e = (LivingEntity) loc.getWorld().spawnEntity(loc.clone().add((Math.random() - 0.5) * 0.1, 0, (Math.random() - 0.5) * 0.1), type);
 		e.setCanPickupItems(true);
-		if (vel.length() > 0)
+		if(vel.length() > 0)
 			e.setVelocity(vel);
-		if (!flags.name.isEmpty()) {
+		if(!flags.name.isEmpty()){
 			e.setCustomName(flags.name.get(new Random().nextInt(flags.name.size())));
-			if (e.getCustomName().contains("rand")) {
+			if(e.getCustomName().contains("rand")){
 				List<String> options;
 				if(e.getCustomName().contains("b") ^ e.getCustomName().contains("g"))
 					options = e.getCustomName().contains("b") ? boyNames : girlNames;
@@ -342,23 +360,23 @@ public class MobMaster extends JavaPlugin implements Listener {
 			e.setCustomNameVisible(true);
 			e.setRemoveWhenFarAway(false);
 		}
-		if (e instanceof Ageable && flags.tag.contains("baby")) {
+		if(e instanceof Ageable && flags.tag.contains("baby")){
 			((Ageable) e).setBaby();
 			((Ageable) e).setAgeLock(true);
 		}
-		if (e instanceof Zombie) {
-			if (flags.tag.contains("baby"))
+		if(e instanceof Zombie){
+			if(flags.tag.contains("baby"))
 				((Zombie) e).setBaby(true);
-			if (flags.tag.contains("vill"))
+			if(flags.tag.contains("vill"))
 				((Zombie) e).setVillager(true);
 		}
-		if (e instanceof Creeper && (flags.tag.contains("charged") || flags.tag.contains("powered")))
+		if(e instanceof Creeper && (flags.tag.contains("charged") || flags.tag.contains("powered")))
 			((Creeper) e).setPowered(true);
-		if (e instanceof Pig && flags.tag.contains("saddle"))
+		if(e instanceof Pig && flags.tag.contains("saddle"))
 			((Pig) e).setSaddle(true);
-		if (e instanceof PigZombie && flags.tag.contains("angry"))
+		if(e instanceof PigZombie && flags.tag.contains("angry"))
 			((PigZombie) e).setAngry(true);
-		if (e instanceof Sheep){
+		if(e instanceof Sheep){
 			if(flags.tag.contains("shear"))
 				((Sheep) e).setSheared(true);
 			if(flags.tag.contains("rand"))
@@ -368,22 +386,22 @@ public class MobMaster extends JavaPlugin implements Listener {
 					if(flags.tag.contains(color.name().toLowerCase()))
 						((Sheep) e).setColor(color);
 		}
-		if (e instanceof Skeleton && flags.tag.contains("wither"))
+		if(e instanceof Skeleton && flags.tag.contains("wither"))
 			((Skeleton) e).setSkeletonType(SkeletonType.WITHER);
-		if (e instanceof Slime) {
-			try {
+		if(e instanceof Slime){
+			try{
 				((Slime) e).setSize(Integer.parseInt(flags.tag));
 			}
-			catch (Exception ex) {}
+			catch(Exception ex){}
 		}
-		if (e instanceof Villager) {
-			if (flags.tag.contains("rand"))
+		if(e instanceof Villager){
+			if(flags.tag.contains("rand"))
 				((Villager) e).setProfession(Profession.values()[new Random().nextInt(Profession.values().length)]);
-			else {
-				try {
+			else{
+				try{
 					((Villager) e).setProfession(Profession.valueOf(flags.tag.toUpperCase()));
 				}
-				catch (Exception ex) {}
+				catch(Exception ex){}
 			}
 		}
 		
@@ -395,7 +413,7 @@ public class MobMaster extends JavaPlugin implements Listener {
 			equip.setBoots(new ItemStack(Material.matchMaterial(flags.armor.name() + "_BOOTS")));
 		}
 		
-		for (Entry<PotionEffectType, Integer> entry : flags.effects.entrySet())
+		for(Entry<PotionEffectType, Integer> entry : flags.effects.entrySet())
 			e.addPotionEffect(new PotionEffect(entry.getKey(), Integer.MAX_VALUE, entry.getValue()));
 		
 		e.setMaxHealth(e.getMaxHealth() * flags.health);
@@ -419,45 +437,52 @@ public class MobMaster extends JavaPlugin implements Listener {
 	}
 	
 	@EventHandler
-	public void applyDamageModifier(final EntityDamageEvent event) {
-		if (event instanceof EntityDamageByEntityEvent) {
+	public void applyDamageModifier(final EntityDamageEvent event){
+		if(event instanceof EntityDamageByEntityEvent){
 			Entity e = ((EntityDamageByEntityEvent) event).getDamager();
-			if (e instanceof Projectile && ((Projectile) e).getShooter() instanceof Entity)
+			if(e instanceof Projectile && ((Projectile) e).getShooter() instanceof Entity)
 				e = (Entity) ((Projectile) e).getShooter();
-			if (e instanceof LivingEntity && Utils.isMasterMob(e))
+			if(e instanceof LivingEntity && Utils.isMasterMob(e))
 				event.setDamage(event.getDamage() * ((MobFlags) e.getMetadata("mob-flags").get(0).value()).damage);
 			final Entity d = e;
 			final Entity v = event.getEntity();
 			if(Utils.isMasterMob(v) && d instanceof LivingEntity)
-				Bukkit.getScheduler().scheduleSyncDelayedTask(this, new Runnable(){ public void run(){
-					((LivingEntity) d).damage(event.getDamage() * ((MobFlags) v.getMetadata("mob-flags").get(0).value()).counter, v);
-				}}, 2L);
+				Bukkit.getScheduler().scheduleSyncDelayedTask(this, new Runnable(){
+					
+					public void run(){
+						((LivingEntity) d).damage(event.getDamage() * ((MobFlags) v.getMetadata("mob-flags").get(0).value()).counter, v);
+					}
+				}, 2L);
 		}
 	}
 	
 	@EventHandler
-	public void combustibleMobs(EntityDeathEvent event) {
+	public void combustibleMobs(EntityDeathEvent event){
 		LivingEntity e = event.getEntity();
-		if (Utils.isMasterMob(e)) {
+		if(Utils.isMasterMob(e)){
 			MobFlags flags = (MobFlags) e.getMetadata("mob-flags").get(0).value();
-			if (flags.explosion > 0)
+			if(flags.explosion > 0)
 				e.getWorld().createExplosion(e.getLocation(), flags.explosion, flags.incendiary);
 		}
 	}
 	
-	public static class ShooterMobs implements Runnable {
+	public static class ShooterMobs implements Runnable{
 		
 		static int tick = 0;
+		
 		public void run(){
 			
 			for(World world : Bukkit.getWorlds())
 				for(final LivingEntity e : world.getLivingEntities())
 					if(Utils.isMasterMob(e)){
 						final MobFlags flags = (MobFlags) e.getMetadata("mob-flags").get(0).value();
-						if(flags.projectile != null && flags.rateOfFire >  0 && tick % flags.rateOfFire == 0)
-							Bukkit.getScheduler().scheduleSyncDelayedTask(MobMaster.plugin(), new Runnable(){ public void run(){
-								e.launchProjectile((Class<? extends Projectile>)flags.projectile.getEntityClass());
-							}}, (long) (Math.random() * 4));
+						if(flags.projectile != null && flags.rateOfFire > 0 && tick % flags.rateOfFire == 0)
+							Bukkit.getScheduler().scheduleSyncDelayedTask(MobMaster.plugin(), new Runnable(){
+								
+								public void run(){
+									e.launchProjectile((Class<? extends Projectile>) flags.projectile.getEntityClass());
+								}
+							}, (long) (Math.random() * 4));
 					}
 			
 			tick++;
@@ -465,6 +490,17 @@ public class MobMaster extends JavaPlugin implements Listener {
 				tick = 0;
 			
 		}
+	
+	}
+
+	public static class OverlordMobs implements Runnable{
+		
+		public void run(){
+			
+			
+			
+		}
+		
 	}
 	
 }
