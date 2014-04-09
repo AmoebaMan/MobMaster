@@ -53,8 +53,9 @@ public class MobMaster extends JavaPlugin implements Listener{
 		s = new Scanner(MobMaster.plugin().getResource("girl_names.txt")).useDelimiter("\\n");
 		while(s.hasNext())
 			girlNames.add(s.next());
-		
+
 		Bukkit.getScheduler().scheduleSyncRepeatingTask(this, new ShooterMobs(), 0L, 4L);
+		Bukkit.getScheduler().scheduleSyncRepeatingTask(this, new OverlordMobs(), 0L, 100L);
 		Bukkit.getPluginManager().registerEvents(this, this);
 		CommandController.registerCommands(this);
 		
@@ -376,6 +377,8 @@ public class MobMaster extends JavaPlugin implements Listener{
 			((Pig) e).setSaddle(true);
 		if(e instanceof PigZombie && flags.tag.contains("angry"))
 			((PigZombie) e).setAngry(true);
+		if(e instanceof Wolf && flags.tag.contains("angry"))
+			((Wolf) e).setAngry(true);
 		if(e instanceof Sheep){
 			if(flags.tag.contains("shear"))
 				((Sheep) e).setSheared(true);
@@ -465,6 +468,20 @@ public class MobMaster extends JavaPlugin implements Listener{
 		}
 	}
 	
+	public void zombieOverlord(EntityDeathEvent event){
+		final LivingEntity e = event.getEntity();
+		for(Entity other : e.getNearbyEntities(5, 5, 5))
+			if(other.getType() == EntityType.ZOMBIE && Utils.isMasterMob(other)){
+				final MobFlags flags = (MobFlags) other.getMetadata("mob-flags").get(0).value();
+				if(flags.overlord)
+					Bukkit.getScheduler().scheduleSyncDelayedTask(this, new Runnable(){ public void run(){
+						Entity zombie = e.getWorld().spawnEntity(e.getLocation(), EntityType.ZOMBIE);
+						if(e.getType() == EntityType.PLAYER)
+							zombie.setMetadata("mob-flags", new FixedMetadataValue(MobMaster.plugin(), new MobFlags().asOverlord()));
+					}}, 50);
+			}
+	}
+	
 	public static class ShooterMobs implements Runnable{
 		
 		static int tick = 0;
@@ -496,7 +513,67 @@ public class MobMaster extends JavaPlugin implements Listener{
 		
 		public void run(){
 			
-			
+			for(World world : Bukkit.getWorlds())
+				for(LivingEntity e : world.getLivingEntities())
+					if(Utils.isMasterMob(e)){
+						final MobFlags flags = (MobFlags) e.getMetadata("mob-flags").get(0).value();
+						if(flags.overlord)
+							switch(e.getType()){
+								case BAT:
+									break;
+								case BLAZE:
+									break;
+								case CAVE_SPIDER:
+									break;
+								case CREEPER:
+									break;
+								case ENDERMAN:
+									break;
+								case ENDER_DRAGON:
+									break;
+								case GHAST:
+									break;
+								/*
+								 * Giants kick players near them away
+								 */
+								case GIANT:
+									for(Entity other : e.getNearbyEntities(5, 5, 5))
+										if(other instanceof Player && ((Player) other).getGameMode() != GameMode.CREATIVE){
+											((Player) other).playSound(e.getLocation(), Sound.ZOMBIE_DEATH, 1, 0.25f);
+											((Player) other).damage(2, e);
+											Vector v = new Vector(2f / (other.getLocation().getX() - e.getLocation().getX()), Math.random() + 0.25, 2f / (other.getLocation().getZ() - e.getLocation().getZ()));
+											e.setVelocity(v);
+										}
+									break;
+								/*
+								 * Slimes and magma cubes multiply
+								 */
+								case MAGMA_CUBE:
+								case SLIME:
+									if(Math.random() > 0.75)
+										e.getWorld().spawnEntity(e.getLocation(), e.getType());
+									break;
+								case MUSHROOM_COW:
+									break;
+								case PIG_ZOMBIE:
+									break;
+								case SHEEP:
+									break;
+								case SILVERFISH:
+									break;
+								case SKELETON:
+									break;
+								case SNOWMAN:
+									break;
+								case SPIDER:
+									break;
+								case SQUID:
+									break;
+								case WITCH:
+									break;
+								default:
+							}
+					}
 			
 		}
 		
