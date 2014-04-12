@@ -16,7 +16,6 @@ import org.bukkit.event.block.Action;
 import org.bukkit.event.entity.EntityDamageByEntityEvent;
 import org.bukkit.event.entity.EntityDamageEvent;
 import org.bukkit.event.entity.EntityDeathEvent;
-import org.bukkit.event.player.PlayerInteractEntityEvent;
 import org.bukkit.event.player.PlayerInteractEvent;
 import org.bukkit.inventory.EntityEquipment;
 import org.bukkit.inventory.ItemStack;
@@ -46,6 +45,12 @@ public class MobMaster extends JavaPlugin implements Listener{
 	
 	public void onEnable(){
 		
+		try{
+			getConfig().options().copyDefaults(true);
+			getConfig().save("plugins/MobMaster/config.yml");
+		}
+		catch(Exception e){ e.printStackTrace(); }
+		
 		Scanner s;
 		s = new Scanner(MobMaster.plugin().getResource("boy_names.txt")).useDelimiter("\\n");
 		while(s.hasNext())
@@ -59,16 +64,18 @@ public class MobMaster extends JavaPlugin implements Listener{
 		Bukkit.getPluginManager().registerEvents(this, this);
 		CommandController.registerCommands(this);
 		
-		try{
-			new MetricsLite(this).start();
-		}
-		catch(Exception e){
-			e.printStackTrace();
+		if(getConfig().getBoolean("enable-metrics")){
+			try{
+				new MetricsLite(this).start();
+			}
+			catch(Exception e){ e.printStackTrace(); }
 		}
 		
-		Updater.checkConfig();
-		if(Updater.isEnabled())
-			new Updater(this, 74552, getFile(), UpdateType.DEFAULT, true);
+		if(getConfig().getBoolean("enable-updater")){
+			Updater.checkConfig();
+			if(Updater.isEnabled())
+				new Updater(this, 74552, getFile(), UpdateType.DEFAULT, true);
+		}
 		
 	}
 	
@@ -424,13 +431,7 @@ public class MobMaster extends JavaPlugin implements Listener{
 		
 		e.setMetadata("mob-flags", new FixedMetadataValue(this, flags));
 	}
-	
-	@EventHandler
-	public void debugMobFlags(PlayerInteractEntityEvent event){
-		if(event.getPlayer().getItemInHand().getType() == Material.RED_MUSHROOM && Utils.isMasterMob(event.getRightClicked()))
-			event.getPlayer().sendMessage(Chat.format("&z[tick_" + ShooterMobs.tick + "]&x " + ((MobFlags) event.getRightClicked().getMetadata("mob-flags").get(0).value()).toString(), Scheme.NORMAL));
-	}
-	
+		
 	@EventHandler
 	public void mobspawnCommandBinds(PlayerInteractEvent event){
 		Player player = event.getPlayer();
