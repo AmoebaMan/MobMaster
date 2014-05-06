@@ -27,15 +27,15 @@ import org.bukkit.util.Vector;
 
 import com.google.common.collect.Lists;
 
+import net.amoebaman.amoebautils.CommandController;
+import net.amoebaman.amoebautils.CommandController.CommandHandler;
+import net.amoebaman.amoebautils.chat.Chat;
+import net.amoebaman.amoebautils.chat.Scheme;
+import net.amoebaman.amoebautils.maps.PlayerMap;
+import net.amoebaman.amoebautils.plugin.MetricsLite;
+import net.amoebaman.amoebautils.plugin.Updater;
+import net.amoebaman.amoebautils.plugin.Updater.UpdateType;
 import net.amoebaman.mobmaster.MobFlags.ArmorType;
-import net.amoebaman.utils.CommandController;
-import net.amoebaman.utils.CommandController.CommandHandler;
-import net.amoebaman.utils.chat.Chat;
-import net.amoebaman.utils.chat.Scheme;
-import net.amoebaman.utils.maps.PlayerMap;
-import net.amoebaman.utils.plugin.MetricsLite;
-import net.amoebaman.utils.plugin.Updater;
-import net.amoebaman.utils.plugin.Updater.UpdateType;
 
 public class MobMaster extends JavaPlugin implements Listener{
 	
