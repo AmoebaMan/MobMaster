@@ -4,6 +4,7 @@ import java.util.*;
 import java.util.Map.Entry;
 
 import org.bukkit.*;
+import org.bukkit.block.Block;
 import org.bukkit.command.BlockCommandSender;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.*;
@@ -40,7 +41,7 @@ import net.amoebaman.mobmaster.MobFlags.ArmorType;
 public class MobMaster extends JavaPlugin implements Listener{
 	
 	private List<String> boyNames = new ArrayList<String>(),
-	    girlNames = new ArrayList<String>();
+		girlNames = new ArrayList<String>();
 	private PlayerMap<Map<ItemStack, String>> binds = new PlayerMap<Map<ItemStack, String>>();
 	
 	public void onEnable(){
@@ -49,7 +50,9 @@ public class MobMaster extends JavaPlugin implements Listener{
 			getConfig().options().copyDefaults(true);
 			getConfig().save("plugins/MobMaster/config.yml");
 		}
-		catch(Exception e){ e.printStackTrace(); }
+		catch(Exception e){
+			e.printStackTrace();
+		}
 		
 		Scanner s;
 		s = new Scanner(MobMaster.plugin().getResource("boy_names.txt")).useDelimiter("\\n");
@@ -58,7 +61,7 @@ public class MobMaster extends JavaPlugin implements Listener{
 		s = new Scanner(MobMaster.plugin().getResource("girl_names.txt")).useDelimiter("\\n");
 		while(s.hasNext())
 			girlNames.add(s.next());
-
+		
 		Bukkit.getScheduler().scheduleSyncRepeatingTask(this, new ShooterMobs(), 0L, 4L);
 		Bukkit.getScheduler().scheduleSyncRepeatingTask(this, new OverlordMobs(), 0L, 100L);
 		Bukkit.getPluginManager().registerEvents(this, this);
@@ -68,7 +71,9 @@ public class MobMaster extends JavaPlugin implements Listener{
 			try{
 				new MetricsLite(this).start();
 			}
-			catch(Exception e){ e.printStackTrace(); }
+			catch(Exception e){
+				e.printStackTrace();
+			}
 		}
 		
 		if(getConfig().getBoolean("enable-updater")){
@@ -189,13 +194,13 @@ public class MobMaster extends JavaPlugin implements Listener{
 						try{
 							flags = flags.withProjectile(Utils.matchName(split[0]), Integer.parseInt(split[1]));
 						}
-						catch(Exception e){}
+					catch(Exception e){}
 				}
 				if(flag.startsWith("c"))
 					try{
 						flags.counter = Float.parseFloat(value);
 					}
-					catch(Exception e){}
+				catch(Exception e){}
 				if(flag.equals("bind") && sender instanceof Player && ((Player) sender).getItemInHand() != null){
 					Player player = (Player) sender;
 					
@@ -363,7 +368,7 @@ public class MobMaster extends JavaPlugin implements Listener{
 					options = e.getCustomName().contains("b") ? boyNames : girlNames;
 				else
 					options = Math.random() > 0.5 ? boyNames : girlNames;
-				e.setCustomName(options.get(new Random().nextInt(options.size())));
+					e.setCustomName(options.get(new Random().nextInt(options.size())));
 			}
 			e.setCustomNameVisible(true);
 			e.setRemoveWhenFarAway(false);
@@ -431,7 +436,7 @@ public class MobMaster extends JavaPlugin implements Listener{
 		
 		e.setMetadata("mob-flags", new FixedMetadataValue(this, flags));
 	}
-		
+	
 	@EventHandler
 	public void mobspawnCommandBinds(PlayerInteractEvent event){
 		Player player = event.getPlayer();
@@ -475,11 +480,14 @@ public class MobMaster extends JavaPlugin implements Listener{
 			if(other.getType() == EntityType.ZOMBIE && Utils.isMasterMob(other)){
 				final MobFlags flags = (MobFlags) other.getMetadata("mob-flags").get(0).value();
 				if(flags.overlord)
-					Bukkit.getScheduler().scheduleSyncDelayedTask(this, new Runnable(){ public void run(){
-						Entity zombie = e.getWorld().spawnEntity(e.getLocation(), EntityType.ZOMBIE);
-						if(e.getType() == EntityType.PLAYER)
-							zombie.setMetadata("mob-flags", new FixedMetadataValue(MobMaster.plugin(), new MobFlags().asOverlord()));
-					}}, 50);
+					Bukkit.getScheduler().scheduleSyncDelayedTask(this, new Runnable(){
+						
+						public void run(){
+							Entity zombie = e.getWorld().spawnEntity(e.getLocation(), EntityType.ZOMBIE);
+							if(e.getType() == EntityType.PLAYER)
+								zombie.setMetadata("mob-flags", new FixedMetadataValue(MobMaster.plugin(), new MobFlags().asOverlord()));
+						}
+					}, 50);
 			}
 	}
 	
@@ -507,73 +515,180 @@ public class MobMaster extends JavaPlugin implements Listener{
 				tick = 0;
 			
 		}
-	
+		
 	}
-
+	
 	public static class OverlordMobs implements Runnable{
 		
 		public void run(){
 			
 			for(World world : Bukkit.getWorlds())
-				for(LivingEntity e : world.getLivingEntities())
+				for(final LivingEntity e : world.getLivingEntities())
 					if(Utils.isMasterMob(e)){
 						final MobFlags flags = (MobFlags) e.getMetadata("mob-flags").get(0).value();
 						if(flags.overlord)
-							switch(e.getType()){
-								case BAT:
-									break;
-								case BLAZE:
-									break;
-								case CAVE_SPIDER:
-									break;
-								case CREEPER:
-									break;
-								case ENDERMAN:
-									break;
-								case ENDER_DRAGON:
-									break;
-								case GHAST:
-									break;
-								/*
-								 * Giants kick players near them away
-								 */
-								case GIANT:
-									for(Entity other : e.getNearbyEntities(5, 5, 5))
-										if(other instanceof Player && ((Player) other).getGameMode() != GameMode.CREATIVE){
-											((Player) other).playSound(e.getLocation(), Sound.ZOMBIE_DEATH, 1, 0.25f);
-											((Player) other).damage(2, e);
-											Vector v = new Vector(2f / (other.getLocation().getX() - e.getLocation().getX()), Math.random() + 0.25, 2f / (other.getLocation().getZ() - e.getLocation().getZ()));
-											e.setVelocity(v);
+							Bukkit.getScheduler().runTaskLater(plugin(), new Runnable(){ public void run(){
+								switch(e.getType()){
+									/*
+									 * Bats give off shrieks that temporarily
+									 * blind
+									 * players
+									 */
+									case BAT:
+										for(int i = 0; i < 20; i++){
+											final int j = 20 - i;
+											Bukkit.getScheduler().runTaskLater(plugin(), new Runnable(){ public void run(){
+												e.getWorld().playSound(e.getLocation(), Sound.BAT_DEATH, j / 20, j / 20);
+											}}, i);
 										}
-									break;
-								/*
-								 * Slimes and magma cubes multiply
-								 */
-								case MAGMA_CUBE:
-								case SLIME:
-									if(Math.random() > 0.75)
-										e.getWorld().spawnEntity(e.getLocation(), e.getType());
-									break;
-								case MUSHROOM_COW:
-									break;
-								case PIG_ZOMBIE:
-									break;
-								case SHEEP:
-									break;
-								case SILVERFISH:
-									break;
-								case SKELETON:
-									break;
-								case SNOWMAN:
-									break;
-								case SPIDER:
-									break;
-								case SQUID:
-									break;
-								case WITCH:
-									break;
-								default:
-							}
+										for(Entity other : e.getNearbyEntities(5, 5, 5))
+											if(other instanceof Player && ((Player) other).getGameMode() != GameMode.CREATIVE)
+												((Player) other).addPotionEffect(new PotionEffect(PotionEffectType.BLINDNESS, 20, 0));
+										break;
+									case BLAZE:
+										break;
+										/*
+										 * Cave spiders spin webs around them
+										 */
+									case CAVE_SPIDER:
+										for(int x = -2; x <= 2; x++)
+											for(int y = -1; y <= 1; y++)
+												for(int z = -2; z <= 2; z++)
+													if(Math.random() > 0.3){
+														final Block target = e.getLocation().getBlock().getRelative(x, y, z);
+														if(target.isEmpty()){
+															target.setType(Material.WEB);
+															Bukkit.getScheduler().runTaskLater(plugin(), new Runnable(){ public void run(){
+																target.setType(Material.AIR);
+															}}, (long) (Math.random() * 50 + 50));
+														}
+													}
+										break;
+										/*
+										 * Creepers survive their own explosions
+										 * (non-periodical)
+										 */
+									case CREEPER:
+										break;
+										/*
+										 * Endermen fuck with the perspective of
+										 * nearby
+										 * players (adjust pitch/yaw)
+										 */
+									case ENDERMAN:
+										for(Entity other : e.getNearbyEntities(5, 5, 5))
+											if(other instanceof Player && ((Player) other).getGameMode() != GameMode.CREATIVE){
+												Location loc = other.getLocation();
+												loc.setYaw((float) (Math.random() * 360));
+												loc.setPitch((float) (Math.random() * 360));
+												other.teleport(loc);
+											}
+										break;
+									case ENDER_DRAGON:
+										break;
+									case GHAST:
+										break;
+										/*
+										 * Giants kick players near them away
+										 */
+									case GIANT:
+										for(Entity other : e.getNearbyEntities(5, 5, 5))
+											if(other instanceof Player && ((Player) other).getGameMode() != GameMode.CREATIVE){
+												((Player) other).playSound(e.getLocation(), Sound.ZOMBIE_DEATH, 1, 0.25f);
+												((Player) other).damage(2, e);
+												Vector v = new Vector(2f / (other.getLocation().getX() - e.getLocation().getX()), Math.random() + 0.25, 2f / (other.getLocation().getZ() - e.getLocation().getZ()));
+												e.setVelocity(v);
+											}
+										break;
+										/*
+										 * Slimes and magma cubes multiply
+										 */
+									case MAGMA_CUBE:
+									case SLIME:
+										if(Math.random() > 0.75)
+											e.getWorld().spawnEntity(e.getLocation(), e.getType());
+										break;
+									case MUSHROOM_COW:
+										break;
+									case PIG_ZOMBIE:
+										break;
+									case SHEEP:
+										break;
+									case SILVERFISH:
+										break;
+									case SKELETON:
+										break;
+									case SNOWMAN:
+										break;
+									case SPIDER:
+										break;
+									case SQUID:
+										break;
+									case WITCH:
+										break;
+									case WITHER:
+										break;
+									case ZOMBIE:
+										break;
+										/*
+										 * Nonaggressive entities obviously have
+										 * no
+										 * overlord behavior.
+										 */
+									case CHICKEN:
+									case COW:
+									case HORSE:
+									case IRON_GOLEM:
+									case OCELOT:
+									case PIG:
+									case PLAYER:
+									case VILLAGER:
+									case WOLF:
+										break;
+										/*
+										 * Nonliving entities can't do SHIT. We
+										 * leave
+										 * these here so we can omit the default
+										 * statement so that Eclipse will warn
+										 * us when
+										 * new entities are added if we miss
+										 * them.
+										 */
+									case ARROW:
+									case BOAT:
+									case COMPLEX_PART:
+									case DROPPED_ITEM:
+									case EGG:
+									case ENDER_CRYSTAL:
+									case ENDER_PEARL:
+									case ENDER_SIGNAL:
+									case EXPERIENCE_ORB:
+									case FALLING_BLOCK:
+									case FIREBALL:
+									case FIREWORK:
+									case FISHING_HOOK:
+									case ITEM_FRAME:
+									case LEASH_HITCH:
+									case LIGHTNING:
+									case MINECART:
+									case MINECART_CHEST:
+									case MINECART_COMMAND:
+									case MINECART_FURNACE:
+									case MINECART_HOPPER:
+									case MINECART_MOB_SPAWNER:
+									case MINECART_TNT:
+									case PAINTING:
+									case PRIMED_TNT:
+									case SMALL_FIREBALL:
+									case SNOWBALL:
+									case SPLASH_POTION:
+									case THROWN_EXP_BOTTLE:
+									case UNKNOWN:
+									case WEATHER:
+									case WITHER_SKULL:
+										break;
+								}
+							}}, (long) (Math.random() * 20));
 					}
 			
 		}
