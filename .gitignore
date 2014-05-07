@@ -50,6 +50,7 @@ xcuserdata/
 .project
 .settings
 .fatjar
+/target
 
 # IntelliJ #
 ############
