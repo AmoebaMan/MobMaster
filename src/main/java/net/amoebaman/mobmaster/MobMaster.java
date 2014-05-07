@@ -55,10 +55,10 @@ public class MobMaster extends JavaPlugin implements Listener{
 		}
 		
 		Scanner s;
-		s = new Scanner(MobMaster.plugin().getResource("boy_names.txt")).useDelimiter("\\n");
+		s = new Scanner(MobMaster.plugin().getResource("names_male.txt")).useDelimiter("\\n");
 		while(s.hasNext())
 			boyNames.add(s.next());
-		s = new Scanner(MobMaster.plugin().getResource("girl_names.txt")).useDelimiter("\\n");
+		s = new Scanner(MobMaster.plugin().getResource("names_female.txt")).useDelimiter("\\n");
 		while(s.hasNext())
 			girlNames.add(s.next());
 		
