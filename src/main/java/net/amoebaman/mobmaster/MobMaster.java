@@ -54,13 +54,16 @@ public class MobMaster extends JavaPlugin implements Listener{
 			e.printStackTrace();
 		}
 		
-		Scanner s;
-		s = new Scanner(MobMaster.plugin().getResource("names_male.txt")).useDelimiter("\\n");
-		while(s.hasNext())
-			boyNames.add(s.next());
-		s = new Scanner(MobMaster.plugin().getResource("names_female.txt")).useDelimiter("\\n");
-		while(s.hasNext())
-			girlNames.add(s.next());
+		Scanner m = new Scanner(MobMaster.plugin().getResource("names_male.txt"));
+		m.useDelimiter("\\n");
+		while(m.hasNext())
+			boyNames.add(m.next());
+		m.close();
+		Scanner f = new Scanner(MobMaster.plugin().getResource("names_female.txt"));
+		f.useDelimiter("\\n");
+		while(f.hasNext())
+			girlNames.add(f.next());
+		f.close();
 		
 		Bukkit.getScheduler().scheduleSyncRepeatingTask(this, new ShooterMobs(), 0L, 4L);
 		Bukkit.getScheduler().scheduleSyncRepeatingTask(this, new OverlordMobs(), 0L, 100L);
@@ -112,7 +115,7 @@ public class MobMaster extends JavaPlugin implements Listener{
 		
 		Location loc = null;
 		if(sender instanceof Player)
-			loc = ((Player) sender).getLastTwoTargetBlocks(null, 250).get(0).getLocation().add(0.5, 0.5, 0.5);
+			loc = ((Player) sender).getLastTwoTargetBlocks((HashSet<Byte>) null, 250).get(0).getLocation().add(0.5, 0.5, 0.5);
 		if(sender instanceof BlockCommandSender)
 			loc = ((BlockCommandSender) sender).getBlock().getLocation().add(0.5, 1.5, 0.5);
 		if(sender instanceof CommandMinecart)
@@ -242,7 +245,7 @@ public class MobMaster extends JavaPlugin implements Listener{
 						public void run(){
 							Location target = fLoc;
 							if(sender instanceof Player)
-								target = ((Player) sender).getTargetBlock(null, 250).getLocation();
+								target = ((Player) sender).getTargetBlock((HashSet<Byte>) null, 250).getLocation();
 							spawnMob(target, new Vector(0, 0, 0), fType, fFlags);
 						}
 					}, i * 5);
@@ -265,7 +268,7 @@ public class MobMaster extends JavaPlugin implements Listener{
 	public void mobkill_cmd(CommandSender sender, String[] args){
 		Location loc = null;
 		if(sender instanceof Player)
-			loc = ((Player) sender).getLastTwoTargetBlocks(null, 250).get(0).getLocation().add(0.5, 0.5, 0.5);
+			loc = ((Player) sender).getLastTwoTargetBlocks((HashSet<Byte>) null, 250).get(0).getLocation().add(0.5, 0.5, 0.5);
 		if(sender instanceof BlockCommandSender)
 			loc = ((BlockCommandSender) sender).getBlock().getLocation().add(0.5, 1.5, 0.5);
 		if(sender instanceof CommandMinecart)
@@ -655,6 +658,7 @@ public class MobMaster extends JavaPlugin implements Listener{
 										 * them.
 										 */
 									case ARROW:
+									case ARMOR_STAND:
 									case BOAT:
 									case COMPLEX_PART:
 									case DROPPED_ITEM:
@@ -662,11 +666,13 @@ public class MobMaster extends JavaPlugin implements Listener{
 									case ENDER_CRYSTAL:
 									case ENDER_PEARL:
 									case ENDER_SIGNAL:
+									case ENDERMITE:
 									case EXPERIENCE_ORB:
 									case FALLING_BLOCK:
 									case FIREBALL:
 									case FIREWORK:
 									case FISHING_HOOK:
+									case GUARDIAN:
 									case ITEM_FRAME:
 									case LEASH_HITCH:
 									case LIGHTNING:
@@ -679,6 +685,7 @@ public class MobMaster extends JavaPlugin implements Listener{
 									case MINECART_TNT:
 									case PAINTING:
 									case PRIMED_TNT:
+									case RABBIT:
 									case SMALL_FIREBALL:
 									case SNOWBALL:
 									case SPLASH_POTION:
@@ -686,6 +693,8 @@ public class MobMaster extends JavaPlugin implements Listener{
 									case UNKNOWN:
 									case WEATHER:
 									case WITHER_SKULL:
+										break;
+									default:
 										break;
 								}
 							}}, (long) (Math.random() * 20));

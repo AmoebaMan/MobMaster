@@ -8,12 +8,12 @@
 
         <repositories>
                 <repository>
-                        <id>bukkit-repo</id>
-                        <url>http://repo.bukkit.org/content/groups/public/</url>
+                        <id>spigot-repo</id>
+                        <url>https://hub.spigotmc.org/nexus/content/groups/public/</url>
                 </repository>
                 <repository>
                         <id>amoeba-repo</id>
-                        <url>http://local.amoebaman.net:8081/nexus/content/repositories/amoeba-repo/</url>
+                        <url>http://localhost:8081/nexus/content/repositories/amoeba-repo/</url>
                 </repository>
         </repositories>
 
@@ -21,8 +21,7 @@
                 <dependency>
                         <groupId>org.bukkit</groupId>
                         <artifactId>bukkit</artifactId>
-                        <version>1.7.8-R0.1-SNAPSHOT</version>
-                        <scope>provided</scope>
+                        <version>1.8-R0.1-SNAPSHOT</version>
                 </dependency>
                 <dependency>
                         <groupId>net.amoebaman</groupId>
@@ -34,7 +33,7 @@
         <distributionManagement>
                 <repository>
                         <id>amoeba-repo</id>
-                        <url>http://local.amoebaman.net:8081/nexus/content/repositories/amoeba-repo/</url>
+                        <url>http://localhost:8081/nexus/content/repositories/amoeba-repo/</url>
                 </repository>
         </distributionManagement>
 
@@ -63,9 +62,9 @@
                                                 <configuration>
                                                         <minimizeJar>true</minimizeJar>
                                                         <artifactSet>
-                                                                <excludes>
-                                                                        <exclude>org.bukkit:*</exclude>
-                                                                </excludes>
+                                                                <includes>
+                                                                        <include>net.amoebaman:*</include>
+                                                                </includes>
                                                         </artifactSet>
                                                         <relocations>
                                                                 <relocation>

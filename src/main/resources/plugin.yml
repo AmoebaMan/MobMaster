@@ -5,7 +5,6 @@ version: 1.2
 author: AmoebaMan
 website: http://www.amoebaman.net
 description: Monster spawning...rewritten for even more evil
-depend: [Utils]
 
 commands:
 
